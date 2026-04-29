@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Constructor de Prompts · IA Masiva</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary: #7C3AED;
+      --primary-light: #EDE9FE;
+      --primary-dark: #5B21B6;
+      --accent: #10B981;
+      --accent-dark: #059669;
+      --bg: #FFFFFF;
+      --card: #F0EEFF;
+      --text: #1E1B4B;
+      --text-secondary: #6B7280;
+      --border: #E5E7EB;
+      --radius: 14px;
+      --radius-sm: 9px;
+      --shadow: 0 1px 4px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.05);
+    }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    .header {
+      background: linear-gradient(135deg, #3B0764 0%, #7C3AED 55%, #A855F7 100%);
+      color: white;
+      padding: 36px 24px 32px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .header::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 20% 60%, rgba(255,255,255,0.06) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(255,255,255,0.06) 0%, transparent 50%);
+    }
+    .header-inner { position: relative; z-index: 1; max-width: 680px; margin: 0 auto; }
+
+    .brand-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.25);
+      border-radius: 100px;
+      padding: 5px 16px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 18px;
+      backdrop-filter: blur(10px);
+    }
+
+    .header h1 {
+      font-size: clamp(22px, 5vw, 38px);
+      font-weight: 800;
+      line-height: 1.2;
+      margin-bottom: 10px;
+    }
+    .header h1 span { opacity: 0.7; font-weight: 400; }
+
+    .header p {
+      font-size: 15px;
+      opacity: 0.8;
+      margin-bottom: 22px;
+      line-height: 1.5;
+    }
+
+    .social-row {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .social-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255,255,255,0.13);
+      border: 1px solid rgba(255,255,255,0.22);
+      border-radius: 100px;
+      padding: 7px 18px;
+      font-size: 13px;
+      font-weight: 600;
+      color: white;
+      text-decoration: none;
+      transition: background 0.2s;
+    }
+    .social-pill:hover { background: rgba(255,255,255,0.25); }
+
+    /* ── GITHUB BANNER ── */
+    .github-bar {
+      background: #1E1B4B;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 13px 20px;
+      flex-wrap: wrap;
+    }
+    .github-bar span { color: rgba(255,255,255,0.65); font-size: 13px; }
+    .github-bar a {
+      color: #C4B5FD;
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: color 0.2s;
+    }
+    .github-bar a:hover { color: #EDE9FE; }
+    .github-icon {
+      display: inline-flex;
+      align-items: center;
+      background: rgba(255,255,255,0.1);
+      border-radius: 6px;
+      padding: 3px 9px 3px 7px;
+      gap: 5px;
+    }
+
+    /* ── MAIN ── */
+    .main { max-width: 800px; margin: 0 auto; padding: 28px 18px 64px; }
+
+    /* ── CARDS ── */
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      padding: 22px 24px;
+      margin-bottom: 18px;
+    }
+
+    .step-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--primary-light);
+      color: var(--primary-dark);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      border-radius: 100px;
+      padding: 3px 10px;
+      margin-bottom: 10px;
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* ── TEXTAREA ── */
+    .prompt-textarea {
+      width: 100%;
+      min-height: 130px;
+      padding: 14px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-family: 'Inter', monospace;
+      font-size: 13px;
+      line-height: 1.65;
+      color: var(--text);
+      resize: vertical;
+      transition: border-color 0.2s, background 0.2s;
+      background: #FAFAFA;
+    }
+    .prompt-textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      background: white;
+    }
+    .prompt-textarea::placeholder { color: #B0B7C3; }
+
+    /* ── PRESETS ── */
+    .presets-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 9px;
+    }
+    @media (max-width: 460px) { .presets-grid { grid-template-columns: 1fr; } }
+
+    .preset-btn {
+      padding: 11px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: white;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+      text-align: left;
+      transition: all 0.15s;
+    }
+    .preset-btn:hover {
+      border-color: var(--primary);
+      background: var(--primary-light);
+      color: var(--primary-dark);
+    }
+    .preset-btn.active {
+      border-color: var(--primary);
+      background: var(--primary-light);
+      color: var(--primary-dark);
+      font-weight: 700;
+    }
+    .preset-btn.none-btn {
+      text-align: center;
+      color: var(--text-secondary);
+      font-style: italic;
+    }
+
+    /* ── CONTROLS GRID ── */
+    .controls-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+    @media (max-width: 540px) { .controls-grid { grid-template-columns: 1fr; } }
+
+    .ctrl { display: flex; flex-direction: column; gap: 7px; }
+    .ctrl.full { grid-column: 1 / -1; }
+
+    .ctrl-label {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    /* ── SELECT ── */
+    .ctrl-select {
+      width: 100%;
+      padding: 10px 36px 10px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-family: inherit;
+      font-size: 14px;
+      color: var(--text);
+      background: white url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 10px center;
+      appearance: none;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    .ctrl-select:focus { outline: none; border-color: var(--primary); }
+
+    /* ── TOGGLE ── */
+    .toggle-row {
+      display: flex;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+    }
+    .toggle-opt {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      background: white;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.15s;
+      text-align: center;
+    }
+    .toggle-opt + .toggle-opt { border-left: 1.5px solid var(--border); }
+    .toggle-opt.active {
+      background: var(--primary);
+      color: white;
+      font-weight: 700;
+    }
+
+    /* ── COLOR PICKERS ── */
+    .color-rows { display: flex; flex-direction: column; gap: 11px; }
+    .color-row-item { display: flex; align-items: center; gap: 10px; }
+    .color-row-name {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      min-width: 130px;
+    }
+    .color-input-box {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 6px 10px;
+      background: white;
+      transition: border-color 0.2s, opacity 0.2s;
+    }
+    .color-input-box.empty { border-color: #DDD8F5; }
+    .color-input-box.empty .hex-input::placeholder { color: #C4BDE8; }
+    .color-input-box.empty .clr-btn { opacity: 0.3; }
+    .color-input-box:focus-within { border-color: var(--primary); opacity: 1; }
+
+    input[type="color"] {
+      width: 26px;
+      height: 26px;
+      border: none;
+      border-radius: 5px;
+      padding: 0;
+      cursor: pointer;
+      background: none;
+      flex-shrink: 0;
+    }
+    .hex-input {
+      flex: 1;
+      border: none;
+      font-family: 'Inter', monospace;
+      font-size: 13px;
+      color: var(--text);
+      background: transparent;
+      min-width: 0;
+    }
+    .hex-input:focus { outline: none; }
+    .hex-input::placeholder { color: #B0B7C3; }
+
+    .clr-btn {
+      background: none;
+      border: none;
+      color: #C4C9D4;
+      cursor: pointer;
+      font-size: 13px;
+      line-height: 1;
+      padding: 2px 4px;
+      border-radius: 4px;
+      transition: color 0.15s, background 0.15s;
+      flex-shrink: 0;
+    }
+    .clr-btn:hover { color: #EF4444; background: #FEF2F2; }
+
+    .color-hint {
+      font-size: 11.5px;
+      color: #9CA3AF;
+      margin-top: 5px;
+      line-height: 1.5;
+    }
+
+    /* ── CHECKBOXES ── */
+    .check-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+    .check-item {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 11px 13px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: white;
+      cursor: pointer;
+      transition: all 0.15s;
+      user-select: none;
+    }
+    .check-item:hover { border-color: var(--primary); background: var(--primary-light); }
+    .check-item.on { border-color: var(--primary); background: var(--primary-light); }
+    .check-box {
+      width: 19px;
+      height: 19px;
+      border: 2px solid var(--border);
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.15s;
+      font-size: 11px;
+      color: transparent;
+    }
+    .check-item.on .check-box {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: white;
+    }
+    .check-text { font-size: 13px; font-weight: 500; }
+
+    /* ── SEGMENTED ── */
+    .segmented {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+    }
+    @media (max-width: 460px) { .segmented { grid-template-columns: repeat(2, 1fr); } }
+
+    .seg-opt {
+      padding: 10px 4px;
+      border: none;
+      background: white;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.15s;
+      text-align: center;
+      line-height: 1.3;
+    }
+    .seg-opt + .seg-opt { border-left: 1.5px solid var(--border); }
+    @media (max-width: 460px) {
+      .seg-opt:nth-child(3) { border-left: none; border-top: 1.5px solid var(--border); }
+      .seg-opt:nth-child(4) { border-top: 1.5px solid var(--border); }
+    }
+    .seg-opt.active { background: var(--primary); color: white; font-weight: 700; }
+
+    /* ── NUMBER INPUT ── */
+    .num-group {
+      display: flex;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+    }
+    .num-btn {
+      width: 42px;
+      border: none;
+      background: #F9F8FF;
+      color: var(--text);
+      font-size: 20px;
+      font-weight: 300;
+      cursor: pointer;
+      transition: background 0.15s;
+      line-height: 1;
+    }
+    .num-btn:hover { background: var(--primary-light); }
+    .num-input {
+      flex: 1;
+      border: none;
+      border-left: 1.5px solid var(--border);
+      border-right: 1.5px solid var(--border);
+      text-align: center;
+      font-family: inherit;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .num-input:focus { outline: none; }
+
+    /* ── GENERATE BUTTON ── */
+    .gen-btn {
+      width: 100%;
+      padding: 17px;
+      background: linear-gradient(135deg, #6D28D9, #7C3AED, #9333EA);
+      color: white;
+      border: none;
+      border-radius: var(--radius);
+      font-family: inherit;
+      font-size: 16px;
+      font-weight: 800;
+      cursor: pointer;
+      letter-spacing: 0.02em;
+      margin-bottom: 18px;
+      box-shadow: 0 4px 18px rgba(109, 40, 217, 0.38);
+      transition: all 0.2s;
+    }
+    .gen-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(109, 40, 217, 0.48);
+    }
+    .gen-btn:active { transform: translateY(0); }
+
+    /* ── OUTPUT ── */
+    .output-card { display: none; }
+    .output-card.visible { display: block; }
+
+    .output-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 13px;
+    }
+    .copy-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 18px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .copy-btn:hover { background: var(--accent-dark); }
+    .copy-btn.copied { background: #059669; }
+
+    .output-box {
+      width: 100%;
+      min-height: 220px;
+      padding: 16px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-family: 'Inter', monospace;
+      font-size: 13px;
+      line-height: 1.7;
+      color: var(--text);
+      background: #FAFBFF;
+      resize: vertical;
+    }
+    .output-hint {
+      font-size: 12px;
+      color: #9CA3AF;
+      margin-top: 8px;
+    }
+
+    /* ── FOOTER ── */
+    .footer {
+      background: #1E1B4B;
+      color: rgba(255,255,255,0.65);
+      text-align: center;
+      padding: 28px 20px;
+      font-size: 13px;
+    }
+    .footer-brand {
+      color: white;
+      font-weight: 800;
+      font-size: 16px;
+      margin-bottom: 4px;
+      letter-spacing: 0.01em;
+    }
+    .footer-sub { margin-bottom: 14px; }
+    .footer-handles {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .footer-handles a {
+      color: #A78BFA;
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.2s;
+    }
+    .footer-handles a:hover { color: #C4B5FD; }
+  </style>
+</head>
+<body>
+
+<!-- ── HEADER ── -->
+<header class="header">
+  <div class="header-inner">
+    <div class="brand-badge">Herramienta exclusiva · IA Masiva</div>
+    <h1>Constructor de Prompts<br><span>para NotebookLM</span></h1>
+    <p>Controla el diseño de tus presentaciones sin saber diseñar.<br>Pega un prompt base, ajusta las opciones y genera tu prompt personalizado.</p>
+    <div class="social-row">
+      <a href="https://www.instagram.com/iamasivaa?igsh=MXRheWt0NjZoeDIweA==" target="_blank" class="social-pill">Instagram · @iamasivaa</a>
+      <a href="https://www.tiktok.com/@iamasiva?_r=1&_t=ZS-95wau7wwy0r" target="_blank" class="social-pill">TikTok · @iamasiva</a>
+    </div>
+  </div>
+</header>
+
+<!-- ── GITHUB BANNER ── -->
+<div class="github-bar">
+  <span>Las plantillas gratuitas las encuentras en este link:</span>
+  <a href="https://github.com/serenakeyitan/awesome-notebookLM-prompts" target="_blank">
+    <span class="github-icon">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
+      github.com/serenakeyitan/awesome-notebookLM-prompts ↗
+    </span>
+  </a>
+</div>
+
+<!-- ── MAIN ── -->
+<main class="main">
+
+  <!-- PASO 1: PROMPT BASE -->
+  <div class="card">
+    <div class="step-label">Paso 1</div>
+    <div class="card-title">📋 Pega tu prompt base</div>
+    <textarea id="basePrompt" class="prompt-textarea"
+      placeholder="Copia aquí el prompt del repositorio de GitHub que quieres usar como base de diseño..."></textarea>
+  </div>
+
+  <!-- PASO 2: PRESETS -->
+  <div class="card">
+    <div class="step-label">Paso 2</div>
+    <div class="card-title">⚡ Elige un preset</div>
+    <div class="presets-grid">
+      <button class="preset-btn none-btn active" id="preset-ninguno" onclick="applyPreset('ninguno', this)">Ninguno</button>
+      <button class="preset-btn" onclick="applyPreset('ventas', this)">Pitch de ventas</button>
+      <button class="preset-btn" onclick="applyPreset('educativa', this)">Clase educativa</button>
+      <button class="preset-btn" onclick="applyPreset('redes', this)">Post para redes</button>
+      <button class="preset-btn" onclick="applyPreset('informe', this)">Informe corporativo</button>
+      <button class="preset-btn" onclick="applyPreset('marca', this)">Marca personal</button>
+    </div>
+  </div>
+
+  <!-- PASO 3: CONTROLES -->
+  <div class="card">
+    <div class="step-label">Paso 3</div>
+    <div class="card-title">🎛️ Personaliza el diseño</div>
+
+    <div class="controls-grid">
+
+      <!-- Objetivo -->
+      <div class="ctrl">
+        <div class="ctrl-label">Objetivo</div>
+        <select id="objetivo" class="ctrl-select">
+          <option value="sales-oriented">Ventas</option>
+          <option value="educational">Educativa</option>
+          <option value="pitch deck">Pitch</option>
+          <option value="social media">Redes sociales</option>
+          <option value="corporate report">Informe</option>
+        </select>
+      </div>
+
+      <!-- Audiencia -->
+      <div class="ctrl">
+        <div class="ctrl-label">Audiencia</div>
+        <select id="audiencia" class="ctrl-select">
+          <option value="beginners">Principiantes</option>
+          <option value="executives">Ejecutivos</option>
+          <option value="entrepreneurs">Emprendedores</option>
+          <option value="technical professionals">Técnicos</option>
+        </select>
+      </div>
+
+      <!-- Estilo visual -->
+      <div class="ctrl">
+        <div class="ctrl-label">Estilo visual</div>
+        <select id="estilo" class="ctrl-select">
+          <option value="minimalist">Minimalista</option>
+          <option value="corporate">Corporativo</option>
+          <option value="futuristic">Futurista</option>
+          <option value="creative">Creativo</option>
+        </select>
+      </div>
+
+      <!-- Modo color -->
+      <div class="ctrl">
+        <div class="ctrl-label">Modo de color</div>
+        <div class="toggle-row">
+          <button class="toggle-opt active" id="modo-light" onclick="setModo('light')">Claro</button>
+          <button class="toggle-opt" id="modo-dark" onclick="setModo('dark')">Oscuro</button>
+        </div>
+      </div>
+
+      <!-- Tipografía -->
+      <div class="ctrl">
+        <div class="ctrl-label">Tipografía</div>
+        <select id="tipografia" class="ctrl-select">
+          <option value="modern sans-serif">Moderna</option>
+          <option value="elegant serif">Elegante</option>
+          <option value="tech monospace">Tech</option>
+          <option value="bold display">Bold</option>
+        </select>
+      </div>
+
+      <!-- Layout -->
+      <div class="ctrl">
+        <div class="ctrl-label">Layout</div>
+        <select id="layout" class="ctrl-select">
+          <option value="centered">Centrado</option>
+          <option value="left-aligned with side visual">Izquierda + visual</option>
+          <option value="grid">Grid</option>
+          <option value="visual-dominant">Visual dominante</option>
+        </select>
+      </div>
+
+      <!-- Número de slides -->
+      <div class="ctrl">
+        <div class="ctrl-label">Número de slides</div>
+        <div class="num-group">
+          <button class="num-btn" onclick="changeSlides(-1)">−</button>
+          <input type="number" id="numSlides" class="num-input" value="10" min="3" max="40">
+          <button class="num-btn" onclick="changeSlides(1)">+</button>
+        </div>
+      </div>
+
+      <!-- Idioma -->
+      <div class="ctrl">
+        <div class="ctrl-label">Idioma de la presentación</div>
+        <select id="idioma" class="ctrl-select">
+          <option value="Spanish">Español</option>
+          <option value="English">Inglés</option>
+          <option value="Portuguese">Portugués</option>
+          <option value="French">Francés</option>
+        </select>
+      </div>
+
+      <!-- Paleta de colores -->
+      <div class="ctrl full">
+        <div class="ctrl-label">Paleta de colores</div>
+        <div class="color-rows">
+          <div class="color-row-item">
+            <span class="color-row-name">Color principal</span>
+            <div class="color-input-box empty" id="cbox1">
+              <input type="color" id="cpicker1" value="#7C3AED" oninput="syncPicker(1)">
+              <input type="text" class="hex-input" id="chex1" placeholder="Dejar a la IA" maxlength="7" oninput="syncHex(1)">
+              <button class="clr-btn" onclick="clearColor(1)" title="Dejar a la IA">✕</button>
+            </div>
+          </div>
+          <div class="color-row-item">
+            <span class="color-row-name">Color secundario</span>
+            <div class="color-input-box empty" id="cbox2">
+              <input type="color" id="cpicker2" value="#A855F7" oninput="syncPicker(2)">
+              <input type="text" class="hex-input" id="chex2" placeholder="Dejar a la IA" maxlength="7" oninput="syncHex(2)">
+              <button class="clr-btn" onclick="clearColor(2)" title="Dejar a la IA">✕</button>
+            </div>
+          </div>
+          <div class="color-row-item">
+            <span class="color-row-name">Color terciario</span>
+            <div class="color-input-box empty" id="cbox3">
+              <input type="color" id="cpicker3" value="#EC4899" oninput="syncPicker(3)">
+              <input type="text" class="hex-input" id="chex3" placeholder="Dejar a la IA" maxlength="7" oninput="syncHex(3)">
+              <button class="clr-btn" onclick="clearColor(3)" title="Dejar a la IA">✕</button>
+            </div>
+          </div>
+        </div>
+        <p class="color-hint">Deja vacío para que la IA elija ese color. Si llenas los tres, la IA respetará tu paleta exacta.</p>
+      </div>
+
+      <!-- Elementos visuales -->
+      <div class="ctrl full">
+        <div class="ctrl-label">Elementos visuales <span style="font-weight:400;text-transform:none;letter-spacing:0">— selección múltiple</span></div>
+        <div class="check-grid">
+          <div class="check-item on" id="ck-iconos" onclick="toggleEl('iconos')">
+            <div class="check-box">✓</div>
+            <span class="check-text">Iconos</span>
+          </div>
+          <div class="check-item" id="ck-ilustraciones" onclick="toggleEl('ilustraciones')">
+            <div class="check-box">✓</div>
+            <span class="check-text">Ilustraciones</span>
+          </div>
+          <div class="check-item" id="ck-fotos" onclick="toggleEl('fotos')">
+            <div class="check-box">✓</div>
+            <span class="check-text">Fotos</span>
+          </div>
+          <div class="check-item on" id="ck-graficos" onclick="toggleEl('graficos')">
+            <div class="check-box">✓</div>
+            <span class="check-text">Gráficos</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Impacto visual -->
+      <div class="ctrl full">
+        <div class="ctrl-label">Impacto visual</div>
+        <div class="segmented">
+          <button class="seg-opt" onclick="setImpacto('sober and understated', this)">Sobrio</button>
+          <button class="seg-opt active" onclick="setImpacto('balanced and professional', this)">Equilibrado</button>
+          <button class="seg-opt" onclick="setImpacto('bold and eye-catching', this)">Llamativo</button>
+          <button class="seg-opt" onclick="setImpacto('very striking and high-impact', this)">Muy llamativo</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- PASO 4: GENERAR -->
+  <button class="gen-btn" onclick="generate()">Generar Prompt Personalizado</button>
+
+  <!-- OUTPUT -->
+  <div class="card output-card" id="outputCard">
+    <div class="output-header">
+      <div class="card-title" style="margin-bottom:0">🚀 Tu prompt está listo</div>
+      <button class="copy-btn" id="copyBtn" onclick="copyPrompt()">Copiar prompt</button>
+    </div>
+    <textarea id="outputBox" class="output-box" readonly></textarea>
+    <p class="output-hint">Copia este prompt y pégalo en NotebookLM al crear tu presentación.</p>
+  </div>
+
+</main>
+
+<!-- ── FOOTER ── -->
+<footer class="footer">
+  <div class="footer-brand">Creado y desarrollado por IA MASIVA</div>
+  <div class="footer-sub">Herramienta exclusiva para nuestra comunidad</div>
+  <div class="footer-handles">
+    <a href="https://www.instagram.com/iamasivaa?igsh=MXRheWt0NjZoeDIweA==" target="_blank">Instagram: @iamasivaa</a>
+    <a href="https://www.tiktok.com/@iamasiva?_r=1&_t=ZS-95wau7wwy0r" target="_blank">TikTok: @iamasiva</a>
+  </div>
+</footer>
+
+<script>
+  // ── STATE ──
+  let modo = 'light';
+  let impacto = 'balanced and professional';
+  let colorState = { 1: null, 2: null, 3: null };
+  let elementos = { iconos: true, ilustraciones: false, fotos: false, graficos: true };
+
+  // ── COLOR PICKERS ──
+  function syncPicker(id) {
+    const val = document.getElementById(`cpicker${id}`).value.toUpperCase();
+    document.getElementById(`chex${id}`).value = val;
+    colorState[id] = val;
+    document.getElementById(`cbox${id}`).classList.remove('empty');
+  }
+
+  function syncHex(id) {
+    const val = document.getElementById(`chex${id}`).value.trim();
+    if (/^#[0-9A-Fa-f]{6}$/.test(val)) {
+      document.getElementById(`cpicker${id}`).value = val;
+      colorState[id] = val.toUpperCase();
+      document.getElementById(`cbox${id}`).classList.remove('empty');
+    } else {
+      colorState[id] = null;
+      document.getElementById(`cbox${id}`).classList.toggle('empty', val === '');
+    }
+  }
+
+  function clearColor(id) {
+    document.getElementById(`chex${id}`).value = '';
+    colorState[id] = null;
+    document.getElementById(`cbox${id}`).classList.add('empty');
+  }
+
+  // ── MODO ──
+  function setModo(val) {
+    modo = val;
+    document.getElementById('modo-light').classList.toggle('active', val === 'light');
+    document.getElementById('modo-dark').classList.toggle('active', val === 'dark');
+  }
+
+  // ── ELEMENTOS ──
+  function toggleEl(id) {
+    elementos[id] = !elementos[id];
+    document.getElementById(`ck-${id}`).classList.toggle('on', elementos[id]);
+  }
+
+  // ── IMPACTO ──
+  function setImpacto(val, btn) {
+    impacto = val;
+    document.querySelectorAll('.seg-opt').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+
+  // ── SLIDES ──
+  function changeSlides(delta) {
+    const inp = document.getElementById('numSlides');
+    inp.value = Math.min(40, Math.max(3, (parseInt(inp.value) || 10) + delta));
+  }
+
+  // ── PRESETS ──
+  const PRESETS = {
+    ninguno: {
+      objetivo: 'sales-oriented', audiencia: 'beginners', estilo: 'minimalist',
+      modo: 'light', tipografia: 'modern sans-serif', layout: 'centered',
+      elementos: ['iconos', 'graficos'], impactoVal: 'balanced and professional',
+      impactoLabel: 'Equilibrado', slides: 10, idioma: 'Spanish'
+    },
+    ventas: {
+      objetivo: 'sales-oriented', audiencia: 'executives', estilo: 'futuristic',
+      modo: 'dark', tipografia: 'bold display', layout: 'visual-dominant',
+      elementos: ['iconos', 'graficos'], impactoVal: 'bold and eye-catching',
+      impactoLabel: 'Llamativo', slides: 10, idioma: 'Spanish'
+    },
+    educativa: {
+      objetivo: 'educational', audiencia: 'beginners', estilo: 'minimalist',
+      modo: 'light', tipografia: 'modern sans-serif', layout: 'left-aligned with side visual',
+      elementos: ['iconos', 'ilustraciones'], impactoVal: 'balanced and professional',
+      impactoLabel: 'Equilibrado', slides: 15, idioma: 'Spanish'
+    },
+    redes: {
+      objetivo: 'social media', audiencia: 'entrepreneurs', estilo: 'creative',
+      modo: 'light', tipografia: 'bold display', layout: 'centered',
+      elementos: ['iconos', 'fotos'], impactoVal: 'very striking and high-impact',
+      impactoLabel: 'Muy llamativo', slides: 6, idioma: 'Spanish'
+    },
+    informe: {
+      objetivo: 'corporate report', audiencia: 'executives', estilo: 'corporate',
+      modo: 'light', tipografia: 'elegant serif', layout: 'grid',
+      elementos: ['graficos', 'iconos'], impactoVal: 'sober and understated',
+      impactoLabel: 'Sobrio', slides: 12, idioma: 'Spanish'
+    },
+    marca: {
+      objetivo: 'pitch deck', audiencia: 'entrepreneurs', estilo: 'creative',
+      modo: 'dark', tipografia: 'elegant serif', layout: 'centered',
+      elementos: ['fotos', 'iconos'], impactoVal: 'bold and eye-catching',
+      impactoLabel: 'Llamativo', slides: 8, idioma: 'Spanish'
+    }
+  };
+
+  function applyPreset(key, btn) {
+    const p = PRESETS[key];
+    document.getElementById('objetivo').value = p.objetivo;
+    document.getElementById('audiencia').value = p.audiencia;
+    document.getElementById('estilo').value = p.estilo;
+    document.getElementById('tipografia').value = p.tipografia;
+    document.getElementById('layout').value = p.layout;
+    document.getElementById('numSlides').value = p.slides;
+    document.getElementById('idioma').value = p.idioma;
+    setModo(p.modo);
+
+    Object.keys(elementos).forEach(id => {
+      elementos[id] = p.elementos.includes(id);
+      document.getElementById(`ck-${id}`).classList.toggle('on', elementos[id]);
+    });
+
+    impacto = p.impactoVal;
+    document.querySelectorAll('.seg-opt').forEach(b => {
+      b.classList.toggle('active', b.textContent.trim() === p.impactoLabel);
+    });
+
+    document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+
+  // ── GENERATE ──
+  function generate() {
+    const base = document.getElementById('basePrompt').value.trim();
+    if (!base) {
+      alert('Primero pega un prompt base del repositorio de GitHub.');
+      document.getElementById('basePrompt').focus();
+      return;
+    }
+
+    const numSlides = document.getElementById('numSlides').value;
+    const modoText = modo === 'light' ? 'light mode' : 'dark mode';
+    const idiomaVal = document.getElementById('idioma').value;
+
+    // Color palette
+    const c = [colorState[1], colorState[2], colorState[3]];
+    const filled = c.filter(Boolean);
+    let colorLine;
+    if (filled.length === 3) {
+      colorLine = `- Color palette: Use this exact palette and respect it strictly — primary: ${c[0]}, secondary: ${c[1]}, tertiary: ${c[2]}`;
+    } else if (filled.length > 0) {
+      const parts = [];
+      if (c[0]) parts.push(`primary: ${c[0]}`);
+      if (c[1]) parts.push(`secondary: ${c[1]}`);
+      if (c[2]) parts.push(`tertiary: ${c[2]}`);
+      colorLine = `- Color palette: Use these specified colors — ${parts.join(', ')}. For unspecified colors, choose what best complements the design`;
+    } else {
+      colorLine = `- Color palette: Choose a harmonious palette that best fits the visual style and objective`;
+    }
+
+    // Elementos visuales
+    const elMap = {
+      iconos: 'icons', ilustraciones: 'illustrations', fotos: 'photos', graficos: 'charts and graphs'
+    };
+    const elSelected = Object.keys(elementos).filter(k => elementos[k]).map(k => elMap[k]);
+    const elText = elSelected.length > 0 ? elSelected.join(', ') : 'icons';
+
+    const prompt =
+`Use the following design as your base reference:
+
+"${base}"
+
+Keep the main structural approach of the base design but apply these specific customizations:
+
+PRESENTATION SETTINGS:
+- Total slides: ${numSlides}
+- Language: All content must be written entirely in ${idiomaVal}
+- Objective: Design for a ${document.getElementById('objetivo').value} purpose
+- Target audience: Adapt tone, vocabulary, and depth for ${document.getElementById('audiencia').value}
+
+VISUAL DESIGN:
+- Visual style: Apply a ${document.getElementById('estilo').value} aesthetic
+- Color mode: Use ${modoText}
+${colorLine}
+- Typography: Use ${document.getElementById('tipografia').value} fonts throughout all slides
+- Slide layout: Organize each slide using a ${document.getElementById('layout').value} layout structure
+
+VISUAL ELEMENTS:
+- Available elements for this presentation: [${elText}]
+- For each individual slide, evaluate which element(s) from the above list are most coherent, relevant, and visually appropriate. Apply them selectively and purposefully — not every slide needs every element type.
+
+VISUAL IMPACT:
+- Impact level: ${impacto} — apply this consistently across all slides in terms of visual density, use of whitespace, contrast, and overall energy
+
+The final result must be a cohesive, visually compelling, and professional presentation that respects the base design's DNA while fully incorporating all the customizations above.`;
+
+    document.getElementById('outputBox').value = prompt;
+    const card = document.getElementById('outputCard');
+    card.classList.add('visible');
+    setTimeout(() => card.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+  }
+
+  // ── COPY ──
+  function copyPrompt() {
+    navigator.clipboard.writeText(document.getElementById('outputBox').value).then(() => {
+      const btn = document.getElementById('copyBtn');
+      btn.textContent = 'Copiado';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = 'Copiar prompt';
+        btn.classList.remove('copied');
+      }, 2500);
+    });
+  }
+</script>
+</body>
+</html>
